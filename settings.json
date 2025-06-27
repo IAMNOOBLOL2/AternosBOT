@@ -19,6 +19,7 @@
   },
 
   "utils": {
+    "skin-pseudo": "Dream",
     "auto-auth": {
       "enabled": false,
       "password": ""
