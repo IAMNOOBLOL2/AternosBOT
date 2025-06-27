@@ -11,18 +11,6 @@ app.get('/', (req, res) => {
 });
 app.listen(8000, () => {
   console.log('Server started');
-
-  // Self-ping every 1 minute to keep the repl alive
-  setInterval(() => {
-    const https = require('https');
-    const url = 'https://64223799-e419-401d-a65d-5e75adba0d0a-00-1xrwffzy4g6b2.picard.replit.dev/';
-
-    https.get(url, (res) => {
-      console.log('Self-ping successful');
-    }).on('error', (err) => {
-      console.log('Self-ping failed:', err.message);
-    });
-  }, 60 * 1000); // 1 minute
 });
 
 
