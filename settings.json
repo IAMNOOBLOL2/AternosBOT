@@ -28,7 +28,7 @@
     "anti-afk": {
       "enabled": true,
       "sneak": false,
-      "swing": false
+      "swing": true
     },
 
     "chat-messages": {
