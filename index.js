@@ -66,7 +66,7 @@ function createBot() {
   bot.once('spawn', () => {
     console.log('\x1b[33m[AfkBot] Bot joined the server\x1b[0m');
 
-    // ✅ Appliquer un skin avec SkinRestorer
+    // ✅ Skin via SkinRestorer
     const skinPseudo = config.utils['skin-pseudo'];
     if (skinPseudo && skinPseudo.length > 0) {
       bot.chat(`/skin set ${skinPseudo}`);
@@ -117,15 +117,23 @@ function createBot() {
     }
   });
 
-  // ✅ Commandes via le chat avec préfixe "!"
+  // ✅ Commandes avec permissions
   const PREFIX = '!';
+  const authorizedUsers = ['GeekAChad'];
+
   bot.on('chat', (username, message) => {
     if (username === bot.username) return;
 
     if (message.startsWith(PREFIX)) {
+      if (!authorizedUsers.includes(username)) {
+        bot.chat(`§cTu n'as pas la permission, ${username}.`);
+        console.log(`[DENIED] ${username} a tenté d'utiliser une commande.`);
+        return;
+      }
+
       const command = message.slice(PREFIX.length).trim();
       bot.chat('/' + command);
-      console.log(`[Commande] ${username} → /${command}`);
+      console.log(`[COMMAND] ${username} a exécuté /${command}`);
     }
   });
 
