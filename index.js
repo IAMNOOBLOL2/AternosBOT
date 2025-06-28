@@ -66,7 +66,7 @@ function createBot() {
   bot.once('spawn', () => {
     console.log('\x1b[33m[AfkBot] Bot joined the server\x1b[0m');
 
-    // ✅ Appliquer le skin via SkinRestorer
+    // ✅ Appliquer un skin avec SkinRestorer
     const skinPseudo = config.utils['skin-pseudo'];
     if (skinPseudo && skinPseudo.length > 0) {
       bot.chat(`/skin set ${skinPseudo}`);
@@ -112,8 +112,20 @@ function createBot() {
           if (bot && bot.entity) {
             bot.swingArm();
           }
-        }, 1000); // tape toutes les secondes
+        }, 1000);
       }
+    }
+  });
+
+  // ✅ Commandes via le chat avec préfixe "!"
+  const PREFIX = '!';
+  bot.on('chat', (username, message) => {
+    if (username === bot.username) return;
+
+    if (message.startsWith(PREFIX)) {
+      const command = message.slice(PREFIX.length).trim();
+      bot.chat('/' + command);
+      console.log(`[Commande] ${username} → /${command}`);
     }
   });
 
