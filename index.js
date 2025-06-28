@@ -117,25 +117,34 @@ function createBot() {
     }
   });
 
-  // ✅ Commandes avec permissions
-  const PREFIX = '!';
-  const authorizedUsers = ['GeekAChad'];
+  // ✅ Commandes avec permissions sans caractères illégaux
+const PREFIX = '!';
+const authorizedUsers = ['GeekAChad'];
 
-  bot.on('chat', (username, message) => {
-    if (username === bot.username) return;
+// Fonction pour nettoyer le pseudo de tout caractère interdit
+function safeUsername(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '');
+}
 
-    if (message.startsWith(PREFIX)) {
-      if (!authorizedUsers.includes(username)) {
-        bot.chat(`§cTu n'as pas la permission, ${username}.`);
-        console.log(`[DENIED] ${username} a tenté d'utiliser une commande.`);
-        return;
-      }
+bot.on('chat', (username, message) => {
+  if (username === bot.username) return;
 
-      const command = message.slice(PREFIX.length).trim();
-      bot.chat('/' + command);
-      console.log(`[COMMAND] ${username} a exécuté /${command}`);
+  const cleanName = safeUsername(username);
+
+  if (message.startsWith(PREFIX)) {
+    if (!authorizedUsers.includes(username)) {
+      bot.chat(`Pas autorisé: ${cleanName}`);
+      console.log(`[DENIED] ${username} a tenté une commande.`);
+      return;
     }
-  });
+
+    const command = message.slice(PREFIX.length).trim();
+    bot.chat('/' + command);
+    bot.chat(`Commande exécutée par ${cleanName}`);
+    console.log(`[COMMAND] ${username} a exécuté /${command}`);
+  }
+});
+
 
   bot.on('goal_reached', () => {
     console.log(`\x1b[32m[AfkBot] Bot arrived at target: ${bot.entity.position}\x1b[0m`);
