@@ -1,50 +1,40 @@
 {
   "bot-account": {
-    "username": "LaDaronne", 
+    "username": "CACATOUTMOU",
     "password": "",
-    "type": "mojang"
+    "type": "offline" 
   },
-
   "server": {
     "ip": "FocusPhysco.aternos.me",
-    "port": 20708,   
-    "version": "1.12.1"   
+    "port": 20708,
+    "version": "1.12.1"
   },
-  
-  "position": {
-    "enabled": false,
-    "x": 0,
-    "y": 0,
-    "z": 0
-  },
-
   "utils": {
-    "skin-pseudo": "Dream",
+    "skin-pseudo": "rexctia",
     "auto-auth": {
       "enabled": false,
       "password": ""
     },
-
-    "anti-afk": {
-      "enabled": true,
-      "sneak": false,
-      "swing": true
-    },
-
     "chat-messages": {
       "enabled": false,
       "repeat": false,
       "repeat-delay": 60,
-
-      "messages": [
-        "",
-        "",
-        ""
-      ]
+      "messages": []
     },
-
-    "chat-log": true,
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true,
+      "swing": true,
+      "move": true,
+      "jump": true
+    },
     "auto-reconnect": true,
     "auto-recconect-delay": 5000
+  },
+  "position": {
+    "enabled": false,
+    "x": 0,
+    "y": 70,
+    "z": 0
   }
 }
