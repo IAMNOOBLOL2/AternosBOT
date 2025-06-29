@@ -36,10 +36,7 @@ function createBot() {
       bot.chat(`/register ${password} ${password}`);
       console.log(`[Auth] Sent /register command.`);
       bot.once('chat', (username, message) => {
-        console.log(`[ChatLog] <${username}> ${message}`);
-        if (message.includes('successfully registered')) {
-          resolve();
-        } else if (message.includes('already registered')) {
+        if (message.includes('successfully registered') || message.includes('already registered')) {
           resolve();
         } else {
           reject(`Register failed: ${message}`);
@@ -53,7 +50,6 @@ function createBot() {
       bot.chat(`/login ${password}`);
       console.log(`[Auth] Sent /login command.`);
       bot.once('chat', (username, message) => {
-        console.log(`[ChatLog] <${username}> ${message}`);
         if (message.includes('successfully logged in')) {
           resolve();
         } else {
@@ -66,7 +62,6 @@ function createBot() {
   bot.once('spawn', () => {
     console.log('\x1b[33m[AfkBot] Bot joined the server\x1b[0m');
 
-    // ✅ Skin via SkinRestorer
     const skinPseudo = config.utils['skin-pseudo'];
     if (skinPseudo && skinPseudo.length > 0) {
       bot.chat(`/skin set ${skinPseudo}`);
@@ -95,63 +90,78 @@ function createBot() {
       }
     }
 
-    const pos = config.position;
     if (config.position.enabled) {
+      const pos = config.position;
       console.log(`\x1b[32m[AfkBot] Moving to (${pos.x}, ${pos.y}, ${pos.z})\x1b[0m`);
       bot.pathfinder.setMovements(defaultMove);
       bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
     }
 
+    // Anti-AFK
     if (config.utils['anti-afk'].enabled) {
-      if (config.utils['anti-afk'].sneak) {
-        bot.setControlState('sneak', true);
-      }
+      setInterval(() => {
+        // Sneak
+        if (config.utils['anti-afk'].sneak) {
+          bot.setControlState('sneak', true);
+          setTimeout(() => bot.setControlState('sneak', false), 500);
+        }
 
-      if (config.utils['anti-afk'].swing) {
-        setInterval(() => {
-          if (bot && bot.entity) {
-            bot.swingArm();
-          }
-        }, 1000);
-      }
-    }
-  });
+        // Move
+        if (config.utils['anti-afk'].move) {
+          bot.setControlState('forward', true);
+          setTimeout(() => {
+            bot.setControlState('forward', false);
+            bot.setControlState('back', true);
+            setTimeout(() => {
+              bot.setControlState('back', false);
+            }, 500);
+          }, 500);
+        }
 
-  // ✅ Commandes avec permissions sans caractères illégaux
-const PREFIX = '!';
-const authorizedUsers = ['GeekAChad'];
+        // Swing
+        if (config.utils['anti-afk'].swing) {
+          bot.swingArm();
+        }
 
-// Fonction pour nettoyer le pseudo de tout caractère interdit
-function safeUsername(name) {
-  return name.replace(/[^a-zA-Z0-9_]/g, '');
-}
-
-bot.on('chat', (username, message) => {
-  if (username === bot.username) return;
-
-  const cleanName = safeUsername(username);
-
-  if (message.startsWith(PREFIX)) {
-    if (!authorizedUsers.includes(username)) {
-      bot.chat(`Pas autorisé: ${cleanName}`);
-      console.log(`[DENIED] ${username} a tenté une commande.`);
-      return;
+        // Jump
+        if (config.utils['anti-afk'].jump) {
+          bot.setControlState('jump', true);
+          setTimeout(() => bot.setControlState('jump', false), 200);
+        }
+      }, 1000);
     }
 
-    const command = message.slice(PREFIX.length).trim();
-    bot.chat('/' + command);
-    bot.chat(`Commande exécutée par ${cleanName}`);
-    console.log(`[COMMAND] ${username} a exécuté /${command}`);
-  }
-});
+    // Commandes
+    const PREFIX = '!';
+    const authorizedUsers = ['GeekAChad'];
 
+    function safeUsername(name) {
+      return name.replace(/[^a-zA-Z0-9_]/g, '');
+    }
 
-  bot.on('goal_reached', () => {
-    console.log(`\x1b[32m[AfkBot] Bot arrived at target: ${bot.entity.position}\x1b[0m`);
-  });
+    bot.on('chat', (username, message) => {
+      if (username === bot.username) return;
+      const cleanName = safeUsername(username);
 
-  bot.on('death', () => {
-    console.log(`\x1b[33m[AfkBot] Bot died and respawned at ${bot.entity.position}\x1b[0m`);
+      if (message.startsWith(PREFIX)) {
+        if (!authorizedUsers.includes(username)) {
+          bot.chat(`Pas autorisé: ${cleanName}`);
+          return;
+        }
+
+        const command = message.slice(PREFIX.length).trim();
+        bot.chat('/' + command);
+        bot.chat(`Commande exécutée par ${cleanName}`);
+      }
+    });
+
+    bot.on('goal_reached', () => {
+      console.log(`\x1b[32m[AfkBot] Bot arrived at target: ${bot.entity.position}\x1b[0m`);
+    });
+
+    bot.on('death', () => {
+      console.log(`\x1b[33m[AfkBot] Bot died and respawned at ${bot.entity.position}\x1b[0m`);
+    });
   });
 
   if (config.utils['auto-reconnect']) {
@@ -167,7 +177,7 @@ bot.on('chat', (username, message) => {
   });
 
   bot.on('error', (err) => {
-    console.log(`\x1b[31m[ERROR] ${err.message}`, '\x1b[0m');
+    console.log(`\x1b[31m[ERROR] ${err.message}\x1b[0m`);
   });
 }
 
