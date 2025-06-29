@@ -4,7 +4,17 @@ const pathfinder = require('mineflayer-pathfinder').pathfinder;
 const { GoalBlock } = require('mineflayer-pathfinder').goals;
 const config = require('./settings.json');
 const discordToken = process.env.DISCORD_BOT_TOKEN;
+const express = require('express');
+const app = express();
+const PORT = 8000;
 
+app.get('/', (req, res) => {
+  res.send('Bot is alive');
+});
+
+app.listen(PORT, () => {
+  console.log(`Bot has arrived at http://localhost:${PORT}`);
+});
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
 const discordClient = new Client({
   intents: [
