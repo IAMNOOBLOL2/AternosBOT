@@ -1,0 +1,48 @@
+{
+  "bot-account": {
+    "username": "LaDaronne",
+    "password": "",
+    "type": "offline"
+  },
+  "server": {
+    "ip": "FocusPhysco.aternos.me",
+    "port": 20708,
+    "version": "1.12.1"
+  },
+  "utils": {
+    "discord": {
+      
+      "clientId": "1388794307896545381",
+      "guildId": "1388783026586259606",
+      "logChannelId": "1388802333038743643",
+      "channelId": "1388794610029039689",
+      "botName": "LaDaronne"
+    },
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true,
+      "swing": true,
+      "move": true,
+      "jump": true
+    },
+    "auto-reconnect": true,
+    "auto-recconect-delay": 5000,
+    "skin-pseudo": "rexctia",
+    "auto-auth": {
+      "enabled": false,
+      "password": ""
+    },
+    "chat-messages": {
+      "enabled": false,
+      "repeat": false,
+      "repeat-delay": 60,
+      "messages": []
+    }
+  },
+  "position": {
+    "enabled": false,
+    "x": 0,
+    "y": 70,
+    "z": 0
+  }
+}

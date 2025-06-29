@@ -1,0 +1,21 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^2.5.1",
+    "@types/node": "^22.13.11",
+    "discord-api-types": "^0.38.13",
+    "discord.js": "^14.21.0",
+    "minecraft-data": "^3.90.0",
+    "mineflayer": "^4.29.0",
+    "mineflayer-pathfinder": "^2.4.5"
+  }
+}
