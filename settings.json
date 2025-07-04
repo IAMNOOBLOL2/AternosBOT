@@ -1,12 +1,17 @@
 {
   "accounts": [
     {
-      "username": "LaDaronne",
+      "username": "MyBigDick",
       "password": "",
       "auth": "offline"
     },
     {
       "username": "CACATOUTMOU",
+      "password": "",
+      "auth": "offline"
+    },
+    {
+      "username": "GerardPartDeGeto",
       "password": "",
       "auth": "offline"
     }
@@ -16,7 +21,7 @@
     "port": 20708,
     "version": "1.12.1"
   },
-  "rotationDelayMinutes": 30,
+  "rotationDelayMinutes": 2,
   "utils": {
     "anti-afk": {
       "enabled": true,
