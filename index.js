@@ -1,17 +1,22 @@
 const mineflayer = require('mineflayer');
 const { Movements, pathfinder, goals } = require('mineflayer-pathfinder');
 const { GoalBlock } = goals;
-const config = require('./settings.json');
 const express = require('express');
+const config = require('./settings.json');
+
 const app = express();
 const PORT = 8000;
-
-app.get('/', (_, res) => res.send('Bot is alive'));
-app.listen(PORT, () => console.log(`Bot has arrived at http://localhost:${PORT}`));
 
 let bot;
 let currentIndex = 0;
 let isKicked = false;
+
+app.get('/', (_, res) => res.send('Bot is alive'));
+app.listen(PORT, () => {
+  console.log(`Bot HTTP server running at http://localhost:${PORT}`);
+  // Directement démarrer la rotation des bots sans lancer le serveur Aternos
+  startRotationSystem();
+});
 
 function createBot(account) {
   console.log(`[BOT] Connexion avec ${account.username}`);
@@ -53,6 +58,18 @@ function createBot(account) {
 
   bot.once('spawn', () => {
     console.log(`[SPAWN] ${account.username} connecté.`);
+
+    // Nouvelle fonctionnalité : pardon 2x les deux autres bots
+    if (Array.isArray(config.botUsernames)) {
+      const others = config.botUsernames.filter(name => name !== account.username);
+      for (let i = 0; i < 2; i++) {
+        others.forEach(otherName => {
+          bot.chat(`/pardon ${otherName}`);
+        });
+      }
+    } else {
+      console.warn("[WARN] Pas de config.botUsernames ou mauvais format.");
+    }
 
     if (config.utils['skin-pseudo']) {
       bot.chat(`/skin set ${config.utils['skin-pseudo']}`);
@@ -130,13 +147,10 @@ function createBot(account) {
     });
   });
 
-  // Supprime toute reconnexion automatique après déconnexion
   bot.on('end', () => {
     console.log(`[END] Bot ${account.username} disconnected.`);
-    if (!isKicked && config.utils['auto-reconnect']) {
-      setTimeout(() => createBot(account), config.utils['auto-recconect-delay']);
-    } else {
-      console.log(`[INFO] Pas de reconnexion (isKicked=${isKicked}).`);
+    if (!isKicked) {
+      console.log(`[INFO] Bot ${account.username} disconnected sans rotation.`);
     }
   });
 
@@ -157,16 +171,14 @@ function rotateBot() {
   setTimeout(() => {
     console.log(`[ROTATE] Connexion avec ${nextAccount.username}...`);
     createBot(nextAccount);
-  }, 2000); // Délai pour éviter un conflit
+  }, 2000);
 }
 
 function startRotationSystem() {
   createBot(config.accounts[currentIndex]);
 
-  const delayMs = config.rotationDelayMinutes * 60 * 1000;
+  const delayMs = (config.rotationDelaySeconds || 60) * 1000;
   setInterval(() => {
     rotateBot();
   }, delayMs);
 }
-
-startRotationSystem();
