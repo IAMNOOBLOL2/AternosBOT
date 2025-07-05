@@ -59,7 +59,7 @@ function createBot(account) {
   bot.once('spawn', () => {
     console.log(`[SPAWN] ${account.username} connecté.`);
 
-    // Nouvelle fonctionnalité : pardon 2x les deux autres bots
+    // Pardon 2 fois pour les deux autres bots
     if (Array.isArray(config.botUsernames)) {
       const others = config.botUsernames.filter(name => name !== account.username);
       for (let i = 0; i < 2; i++) {
