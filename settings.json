@@ -18,8 +18,8 @@
   ],
   "botUsernames": ["LaDaronne", "IAMSTEVE", "Mojang"],
   "server": {
-    "ip": "FocusPhysco.aternos.me",
-    "port": 20708,
+    "ip": "HvKMoustiqueFou.aternos.me",
+    "port": 15475,
     "version": "1.12.1"
   },
   "rotationDelaySeconds": 60,
