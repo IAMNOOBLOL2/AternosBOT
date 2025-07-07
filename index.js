@@ -9,7 +9,8 @@ const PORT = 8000;
 
 let bot;
 let currentIndex = 0;
-let isRotating = false; // Pour savoir si la déconnexion est volontaire
+let isRotating = false;
+let antiAfkInterval = null;
 
 app.get('/', (_, res) => res.send('Bot is alive'));
 app.listen(PORT, () => {
@@ -19,7 +20,7 @@ app.listen(PORT, () => {
 
 function createBot(account) {
   console.log(`[BOT] Connexion avec ${account.username}`);
-  isRotating = false; // reset à chaque bot lancé
+  isRotating = false;
 
   bot = mineflayer.createBot({
     username: account.username,
@@ -58,7 +59,7 @@ function createBot(account) {
   bot.once('spawn', () => {
     console.log(`[SPAWN] ${account.username} connecté.`);
 
-    // Double /pardon sur les deux autres bots
+    // Unban les autres bots
     if (Array.isArray(config.botUsernames)) {
       const others = config.botUsernames.filter(name => name !== account.username);
       for (let i = 0; i < 2; i++) {
@@ -101,8 +102,9 @@ function createBot(account) {
     }
 
     if (config.utils['anti-afk'].enabled) {
-      setInterval(() => {
-        if (!bot || !bot.entity) return;
+      antiAfkInterval = setInterval(() => {
+        if (!bot || !bot.entity || bot._disableAntiafk) return;
+
         if (config.utils['anti-afk'].sneak) {
           bot.setControlState('sneak', true);
           setTimeout(() => bot.setControlState('sneak', false), 500);
@@ -146,8 +148,9 @@ function createBot(account) {
 
   bot.on('end', () => {
     console.log(`[END] Bot ${account.username} disconnected.`);
+    if (antiAfkInterval) clearInterval(antiAfkInterval);
     if (!isRotating) {
-      console.log(`[INFO] Reconnexion du bot ${account.username} dans 10s...`);
+      console.log(`[INFO] Reconnexion de ${account.username} dans 10s...`);
       setTimeout(() => createBot(account), 10000);
     }
   });
@@ -161,6 +164,23 @@ function createBot(account) {
   });
 }
 
+function scheduleNextRotation() {
+  const delayMs = (config.rotationDelaySeconds || 60) * 1000;
+
+  // Désactivation anti-AFK 5s avant
+  setTimeout(() => {
+    if (bot) {
+      console.log(`[ROTATION] Désactivation de l'anti-AFK de ${bot.username}`);
+      bot._disableAntiafk = true;
+    }
+  }, delayMs - 5000);
+
+  // Rotation après délai complet
+  setTimeout(() => {
+    rotateBot();
+  }, delayMs);
+}
+
 function rotateBot() {
   if (bot) {
     console.log(`[ROTATE] Déconnexion de ${bot.username}...`);
@@ -168,19 +188,16 @@ function rotateBot() {
     bot.quit("Rotation vers un autre compte");
   }
 
-  currentIndex = (currentIndex + 1) % config.accounts.length;
-  const nextAccount = config.accounts[currentIndex];
-
   setTimeout(() => {
-    console.log(`[ROTATE] Connexion avec ${nextAccount.username}...`);
+    currentIndex = (currentIndex + 1) % config.accounts.length;
+    const nextAccount = config.accounts[currentIndex];
+    console.log(`[ROTATE] Connexion avec ${nextAccount.username}`);
     createBot(nextAccount);
-  }, 2000);
+    scheduleNextRotation();
+  }, 5000);
 }
 
 function startRotationSystem() {
   createBot(config.accounts[currentIndex]);
-  const delayMs = (config.rotationDelaySeconds || 60) * 1000;
-  setInterval(() => {
-    rotateBot();
-  }, delayMs);
+  scheduleNextRotation();
 }
