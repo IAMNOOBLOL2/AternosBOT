@@ -9,17 +9,18 @@ const PORT = 8000;
 
 let bot;
 let currentIndex = 0;
-let isKicked = false;
+let isRotating = false; // Pour savoir si la déconnexion est volontaire
 
 app.get('/', (_, res) => res.send('Bot is alive'));
 app.listen(PORT, () => {
   console.log(`Bot HTTP server running at http://localhost:${PORT}`);
-  // Directement démarrer la rotation des bots sans lancer le serveur Aternos
   startRotationSystem();
 });
 
 function createBot(account) {
   console.log(`[BOT] Connexion avec ${account.username}`);
+  isRotating = false; // reset à chaque bot lancé
+
   bot = mineflayer.createBot({
     username: account.username,
     password: account.password,
@@ -28,8 +29,6 @@ function createBot(account) {
     port: config.server.port,
     version: config.server.version,
   });
-
-  isKicked = false;
 
   bot.loadPlugin(pathfinder);
   const mcData = require('minecraft-data')(bot.version);
@@ -59,7 +58,7 @@ function createBot(account) {
   bot.once('spawn', () => {
     console.log(`[SPAWN] ${account.username} connecté.`);
 
-    // Pardon 2 fois pour les deux autres bots
+    // Double /pardon sur les deux autres bots
     if (Array.isArray(config.botUsernames)) {
       const others = config.botUsernames.filter(name => name !== account.username);
       for (let i = 0; i < 2; i++) {
@@ -67,8 +66,6 @@ function createBot(account) {
           bot.chat(`/pardon ${otherName}`);
         });
       }
-    } else {
-      console.warn("[WARN] Pas de config.botUsernames ou mauvais format.");
     }
 
     if (config.utils['skin-pseudo']) {
@@ -149,19 +146,25 @@ function createBot(account) {
 
   bot.on('end', () => {
     console.log(`[END] Bot ${account.username} disconnected.`);
-    if (!isKicked) {
-      console.log(`[INFO] Bot ${account.username} disconnected sans rotation.`);
+    if (!isRotating) {
+      console.log(`[INFO] Reconnexion du bot ${account.username} dans 10s...`);
+      setTimeout(() => createBot(account), 10000);
     }
   });
 
-  bot.on('kicked', reason => console.log(`[KICKED] ${reason}`));
-  bot.on('error', err => console.log(`[ERROR] ${err.message}`));
+  bot.on('kicked', reason => {
+    console.log(`[KICKED] ${reason}`);
+  });
+
+  bot.on('error', err => {
+    console.log(`[ERROR] ${err.message}`);
+  });
 }
 
 function rotateBot() {
   if (bot) {
     console.log(`[ROTATE] Déconnexion de ${bot.username}...`);
-    isKicked = true;
+    isRotating = true;
     bot.quit("Rotation vers un autre compte");
   }
 
@@ -176,7 +179,6 @@ function rotateBot() {
 
 function startRotationSystem() {
   createBot(config.accounts[currentIndex]);
-
   const delayMs = (config.rotationDelaySeconds || 60) * 1000;
   setInterval(() => {
     rotateBot();
